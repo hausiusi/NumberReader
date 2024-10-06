@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os.path
-
+import argparse
 import pygame
+import random
 
 audio_path_root = "data"
-audio_language = "ka"
+audio_language = ""
 
 
 def play_audio(audio_path):
@@ -81,20 +82,76 @@ def create_sequence_ka(num: int, zeroes_in_min: int, audio_seq: list):
 
 def read(num: int):
     audio_seq = []
-    create_sequence_ka(num, 18, audio_seq)
+    if audio_language == 'ka':
+        create_sequence_ka(num, 24, audio_seq)
+    else:
+        print(f"Language is not supported: {audio_language}")
+        return
     play_sequence(audio_seq)
 
 
-if __name__ == '__main__':
-    while True:
+def read_result(result: bool):
+    if result:
+        pass
+    else:
+        pass
+
+
+def play_game():
+    tmp_sequence = []
+    rnd_number = random.randint(0, rnd_limit)
+    create_sequence_ka(rnd_number, 24, tmp_sequence)
+    play_audio(os.path.join(audio_path_root, audio_language, "input_the_number.mp3"))
+    play_sequence(tmp_sequence)
+
+    input_is_correct = False
+    while not input_is_correct:
         user_input = input("Input the number:")
         if user_input == "exit":
             exit()
 
+        number = int(user_input)
+        input_is_correct = number == rnd_number
+        if input_is_correct:
+            play_audio(os.path.join(audio_path_root, audio_language, "well_done.mp3"))
+        else:
+            play_audio(os.path.join(audio_path_root, audio_language, "try_again.mp3"))
+
+
+def read_inputs():
+    user_input = input("Input the number:")
+    if user_input == "exit":
+        exit()
+    number = int(user_input)
+    read(number)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-g',
+                        '--game_limit',
+                        metavar='',
+                        default=0,
+                        help='Start the number game')
+    parser.add_argument('-l',
+                        '--language',
+                        metavar='',
+                        default='ka',
+                        help='Choose the language. Available languages: ka (georgian)')
+
+    args = parser.parse_args()
+    audio_language = args.language
+    rnd_limit = int(args.game_limit)
+
+    while True:
         try:
-            number = int(user_input)
+            if rnd_limit > 0:
+                play_game()
+            else:
+                read_inputs()
+
         except:
             print("Please, provide the number")
             continue
 
-        read(number)
+
